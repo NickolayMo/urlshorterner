@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <div>
+            <div>
+                История для <a target="_blank" href="{{ path('app_app.to_real', {'hash': url.shortUrl}) }}">{{ url.shortUrl }}</a>
+            </div>
+            <div>
+                Создана: {{ url.createdAt|date('Y-m-d') }}
+            </div>
+            <div>
+                Оригинальная ссылка: <a target="_blank" href="{{ url.url }}">{{ url.url }}</a>
+            </div>
+        </div>
+
+        <div id="chart_div"></div>
+        <div class="row">
+            <div class="col-md-4">
+                <div id="agents"></div>
+            </div>
+            <div class="col-md-4">
+                <div id="ips"></div>
+            </div>
+            <div class="col-md-4">
+                <div id="referrers"></div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        google.charts.load('current', {packages: ['corechart', 'line']});
+        google.charts.setOnLoadCallback(drawBasic);
+        google.charts.setOnLoadCallback(drawAgentChart);
+        google.charts.setOnLoadCallback(drawIpChart);
+        google.charts.setOnLoadCallback(drawReferrerChart);
+        function drawBasic() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('date', 'Дата');
+            data.addColumn('number', 'Кликов');
+
+            data.addRows([
+                {% for date, data in clickStat %}
+                [new Date({{ date|date('Y')}}, {{ (date|date('m'))-1}}, {{ (date|date('d'))}}, {{ (date|date('H'))}}, {{ (date|date('i'))}}, {{ (date|date('s'))}}), {{ data}}],
+                {% endfor %}
+            ]);
+
+            var options = {
+                hAxis: {
+                    title: 'Дата',
+                    format: 'yyyy-MM-dd'
+
+                },
+                vAxis: {
+                    title: 'Кликов'
+                },
+                legend: 'none'
+
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            var monthYearFormatter = new google.visualization.DateFormat({
+                pattern: 'yyyy-MM-dd HH:mm:ss'
+            });
+            monthYearFormatter.format(data, 0);
+            chart.draw(data, options);
+        }
+
+        function drawAgentChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['User-agent', 'Клики'],
+                {% for key, data in agentStat %}
+                ["{{ key }}", {{ data }}],
+                {% endfor %}
+
+            ]);
+            var options = {
+                title: 'Браузеры'
+            };
+            var chart = new google.visualization.PieChart(document.getElementById('agents'));
+            chart.draw(data, options);
+        }
+
+        function drawReferrerChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Referres', 'Клики'],
+                {% for key, data in referrersStat %}
+                ["{{ key }}", {{ data }}],
+                {% endfor %}
+
+            ]);
+            var options = {
+                title: 'Referres'
+            };
+            var chart = new google.visualization.PieChart(document.getElementById('referrers'));
+            chart.draw(data, options);
+        }
+        function drawIpChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Ip', 'Клики'],
+                {% for key, data in ipsStat %}
+                ["{{ key }}", {{ data }}],
+                {% endfor %}
+
+            ]);
+            var options = {
+                title: 'Ip'
+            };
+            var chart = new google.visualization.PieChart(document.getElementById('ips'));
+            chart.draw(data, options);
+        }
+
+    </script>
+{% endblock %}

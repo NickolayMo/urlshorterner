@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+{% block body%}
+    <style>
+        .container .list-container{
+            margin-top: 40px;
+        }
+    </style>
+
+  <div class="container">
+    <h3>Сократите Вашу ссылку </h3>
+    <div class="form-container">
+    {{ form_start(form, {'attr': {'class': 'form'}}) }}
+      <div class="form-group {% if not form.url.vars.valid %} has-error has-feedback {% endif %}">
+
+        <div class="input-group">
+         <span class="input-group-btn">
+           {{ form_widget(form.save, {'attr': {
+             'class': 'btn btn-default',
+             'type':'button'
+           }}) }}
+         </span>
+        {{ form_widget(form.url, {
+          'attr': {
+            'class': 'form-control',
+            'placeholder': 'http://Ваш url'
+          },
+        }) }}
+
+        {% if not form.url.vars.valid %}
+        <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+        {% endif %}
+        </div>
+        {% for error in form.url.vars.errors %}
+          <label class="control-label" for="AppBundle_url_url">{{ error.message }}</label>
+        {% endfor %}
+      </div>
+    {{ form_end(form) }}
+    </div>
+    <div class="link">
+      {% if hash %}
+        <form class="form">
+          <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">Ваша короткая ссылка</div>
+            <input class="form-control" id="shortUrl" name="shortUrl" value="{{ app.request.schemeAndHttpHost ~ app.request.baseUrl }}/{{ hash }}"/>
+         <span class="input-group-btn">
+           <button class="btn btn-default" id="copyToClipboard" type="button">Скопировать</button>
+           </span>
+          </div>
+            </div>
+        </form>
+
+      {% endif %}
+    </div>
+    <div class="list-container">
+      <h4>История</h4>
+      {# total items count #}
+      <table class="table table-bordered">
+        <tr>
+          {# sorting of properties based on query components #}
+          <th{% if pagination.isSorted('a.url') %} class="sorted"{% endif %}>{{ knp_pagination_sortable(pagination, 'Оригинальная ссылка', 'a.url') }}</th>
+          <th{% if pagination.isSorted('a.shortUrl') %} class="sorted"{% endif %}>{{ knp_pagination_sortable(pagination, 'Сокращенная ссылка', 'a.shortUrl') }}</th>
+          <th>{{ knp_pagination_sortable(pagination, 'Кликов', ['a.clicks']) }}</th>
+          <th>{{ knp_pagination_sortable(pagination, 'Создана', ['a.createdAt']) }}</th>
+        </tr>
+
+        {# table body #}
+        {% for url in pagination %}
+          <tr {% if loop.index is odd %}class="color"{% endif %}>
+            <td><a target="_blank" href="{{ url.url }}">{{ url.url }}</a></td>
+            <td><a target="_blank" href="{{ path('app_app.to_real', {'hash': url.shortUrl}) }}">{{ url.shortUrl }}</a></td>
+            <td><a target="_blank" href="{{ path('app_app.history', {'hash': url.shortUrl}) }}">{{ url.clicks }}</a></td>
+            <td>{{ url.createdAt | date('Y-m-d') }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+      {# display navigation #}
+      <div class="navigation">
+        {{ knp_pagination_render(pagination) }}
+      </div>
+    </div>
+  </div>
+  <script>
+
+    $("#copyToClipboard").on('click', function(event) {
+      $('#shortUrl').select();
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copying text command was ' + msg);
+      } catch (err) {
+        console.log('Oops, unable to copy');
+      }
+    });
+  </script>
+{% endblock %}

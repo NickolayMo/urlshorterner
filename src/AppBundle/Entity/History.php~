@@ -1,0 +1,71 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Николай
+ * Date: 29.01.2017
+ * Time: 17:31
+ */
+
+namespace UrlShottenerBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\DateTime;
+
+/**
+ * History
+ *
+ * @ORM\Table(name="history")
+ * @ORM\Entity(repositoryClass="UrlShottenerBundle\Repository\HistoryRepository")
+ */
+
+class History
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="browsers", type="text")
+     */
+    private $browsers;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="referrers", type="text")
+     */
+    private $referrers;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="ip", type="text")
+     */
+    private $ip;
+
+    /**
+     * @var int
+     *
+     * @ORM\ManyToOne(targetEntity="Url", inversedBy="history")
+     * @ORM\JoinColumn(name="url_id", referencedColumnName="id")
+     */
+    private $url;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="created_at", type="datetime")
+     */
+    private $createdAt;
+
+
+
+
+}
